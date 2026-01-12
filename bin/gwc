@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+set -e
+
+# ===== 基础校验 =====
+git rev-parse --git-dir >/dev/null 2>&1 || {
+  echo "❌ Not a git repository"
+  exit 1
+}
+
+current_branch=$(git branch --show-current)
+[ -z "$current_branch" ] && echo "❌ No current branch" && exit 1
+
+echo "当前分支: $current_branch"
+
+# ===== commit =====
+read -p "请输入 commit message: " commit_msg
+[ -z "$commit_msg" ] && echo "❌ commit message 不能为空" && exit 1
+
+git add -A
+git commit -m "$commit_msg"
+git push origin "$current_branch"
+
+# ===== 新分支 =====
+read -p "是否创建新分支继续开发？(y/n): " create_new
+
+if [[ "$create_new" =~ ^[Yy]$ ]]; then
+  date_prefix=$(date +"%y%m%d")
+  default_prefix="feat/${date_prefix}_"
+
+  git fetch origin || return 1
+  git pull origin || return 1
+  echo "✅ main 已更新到最新"
+
+  read -p "请输入新分支名（默认前缀 ${default_prefix}）: " branch_input
+  [ -z "$branch_input" ] && echo "❌ 分支名不能为空" && exit 1
+
+  if [[ "$branch_input" == */* ]]; then
+    new_branch="$branch_input"
+  else
+    new_branch="${default_prefix}${branch_input}"
+  fi
+
+  git switch -c "$new_branch" b main
+  echo "🚀 已切换到 $new_branch"
+fi
+
