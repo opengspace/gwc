@@ -2,21 +2,20 @@
 set -e
 
 INSTALL_DIR="$HOME/.local/bin"
+REPO_RAW="https://raw.githubusercontent.com/opengspace/gwc/main"
 
 echo "📦 Installing gwc to $INSTALL_DIR"
 
 mkdir -p "$INSTALL_DIR"
-cp bin/gwc "$INSTALL_DIR/gwc"
+curl -fsSL "$REPO_RAW/bin/gwc" -o "$INSTALL_DIR/gwc"
 chmod +x "$INSTALL_DIR/gwc"
 
-# 自动加入 PATH（zsh / bash 通吃）
-SHELL_RC="$HOME/.zshrc"
-[ -n "$BASH_VERSION" ] && SHELL_RC="$HOME/.bashrc"
-
-if ! grep -q "$INSTALL_DIR" "$SHELL_RC"; then
+if ! echo "$PATH" | grep -q "$INSTALL_DIR"; then
+  SHELL_RC="$HOME/.zshrc"
+  [ -n "$BASH_VERSION" ] && SHELL_RC="$HOME/.bashrc"
   echo "export PATH=\"$INSTALL_DIR:\$PATH\"" >> "$SHELL_RC"
   echo "✅ PATH 已写入 $SHELL_RC"
 fi
 
-echo "🎉 安装完成，请执行：source $SHELL_RC"
+echo "🎉 安装完成，请执行：source ~/.zshrc"
 
